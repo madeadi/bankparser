@@ -8,6 +8,7 @@ import (
 	_dict "github.com/madeadi/bankparser/dictionary"
 	_csv "github.com/madeadi/bankparser/dictionary/csv"
 	"github.com/madeadi/bankparser/provider"
+	"github.com/madeadi/bankparser/provider/dbs.go"
 	"github.com/madeadi/bankparser/provider/revolut"
 )
 
@@ -37,12 +38,15 @@ func main() {
 	switch *providerStr {
 	case "revolut":
 		p = revolut.NewRevolut(dictionary)
-		p.Parse(*in).Save(*out)
+
+	case "dbs":
+		p = dbs.NewDbs()
 
 	default:
 		panic("Unknown provider")
 	}
 
+	p.Parse(*in).Save(*out)
 	fmt.Println("Successfully parsing to " + *out)
 }
 

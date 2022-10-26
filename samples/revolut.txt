@@ -1,0 +1,2 @@
+Type,Product,Started Date,Completed Date,Description,Amount,Fee,Currency,State,Balance
+CARD_PAYMENT,Current,2022-09-01 09:57:21,2022-09-01 22:51:36,Cro Topup Internet Gfs,-500.00,0.00,SGD,COMPLETED,90.02

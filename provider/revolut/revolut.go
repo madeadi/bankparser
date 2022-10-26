@@ -9,7 +9,6 @@ import (
 )
 
 type Revolut struct {
-	outputPath string
 	dictionary dictionary.Dictionary
 }
 

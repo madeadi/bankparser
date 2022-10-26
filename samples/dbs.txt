@@ -1,0 +1,10 @@
+Date, Description, Withdrawal (-), Deposit (+), Balance (SGD)
+Balance Brought Forward 2,000
+01/09/2022 Monthly Savings Amount for MySavings/POSB
+SAYE Account
+TO MSA: 00-00000
+100.00 1,900
+01/09/2022 Standing Instruction
+TO : JOHNY
+PART/REF:SI BILL
+1,000.00 900.00
