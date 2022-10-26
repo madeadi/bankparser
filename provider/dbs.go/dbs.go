@@ -36,6 +36,7 @@ func (d dbs) Parse(input string) *provider.Csv {
 
 	for fs.Scan() {
 		text := fs.Text()
+		text = strings.Trim(text, " ")
 		if strings.Contains(text, "Balance Brought Forward") {
 			balance := strings.ReplaceAll(text, "Balance Brought Forward", "")
 			prevBalance, err = parseFloatMoney(balance)
