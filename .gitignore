@@ -1,1 +1,7 @@
-./*.csv
+!./*.go
+!go.mod
+!go.sum
+!*.md
+
+// ignore everything other than the above
+*

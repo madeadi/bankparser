@@ -62,6 +62,25 @@ func (d dbs) Parse(input string) *provider.Csv {
 				// Convert it to Y-m-d format
 				row.Date = fmt.Sprintf("%s-%s-%s", dateArr[2], dateArr[1], dateArr[0])
 
+				// there's an edge case which is like this:
+				// 31/01/2022 Interest Earned 1.58 38,335.19
+				// where the last two tokens are the amount and balance.
+				// if they'are token and balance, we need to pop the amount and balance
+				// and pass it to the next process.
+				if len(tokenArr) >= 4 {
+					maybeAmount := tokenArr[len(tokenArr)-2]
+					maybeBalance := tokenArr[len(tokenArr)-1]
+					in, out, ok := parseInOut(maybeAmount, maybeBalance, &prevBalance)
+					if ok {
+						row.In = in
+						row.Out = out
+						row.Description = strings.Join(tokenArr[1:len(tokenArr)-2], " ")
+						d.resetAndAppendRow(&row)
+						continue
+					}
+
+				}
+
 				// parsing description
 				// e.g. Monthly Savings Amount for MySavings/POSB
 				row.Description = strings.Join(tokenArr[1:], " ")
@@ -74,26 +93,14 @@ func (d dbs) Parse(input string) *provider.Csv {
 		// e.g. 30.35 1,284.62
 		if len(tokenArr) == 2 {
 			// parsing amount
-			amount, err := parseFloatMoney(tokenArr[0])
-
-			if err == nil {
-				// parsing balance
-				balance, err := parseFloatMoney(tokenArr[1])
-				if err == nil {
-					if prevBalance < balance {
-						// this means that the amount is positive
-						row.In = amount
-					} else {
-						// this means that the amount is negative
-						row.Out = amount
-					}
-					prevBalance = balance
-
-					// we are done with a single transaction. Therefore,
-					// store the row into array and continue with next row
-					d.resetAndAppendRow(&row)
-					continue
-				}
+			var ok bool
+			row.In, row.Out, ok = parseInOut(tokenArr[0], tokenArr[1], &prevBalance)
+			if ok {
+				// we are done with a single transaction. Therefore,
+				// store the row into array and continue with next row
+				prevBalance, _ = parseFloatMoney(tokenArr[1])
+				d.resetAndAppendRow(&row)
+				continue
 			}
 		}
 
@@ -127,4 +134,30 @@ func parseFloatMoney(val string) (float64, error) {
 	val = strings.ReplaceAll(val, ",", "")
 	amount, err := strconv.ParseFloat(val, 64)
 	return amount, err
+}
+
+/// A helper function to parse the amount and balance
+/// and update the previous balance
+func parseInOut(amountStr string, balanceStr string, prevBalance *float64) (in float64, out float64, ok bool) {
+	// parsing amount
+	amount, err := parseFloatMoney(amountStr)
+
+	if err == nil {
+		// parsing balance
+		balance, err := parseFloatMoney(balanceStr)
+		if err == nil {
+			if *prevBalance < balance {
+				// this means that the amount is positive
+				in = amount
+			} else {
+				// this means that the amount is negative
+				out = amount
+			}
+			prevBalance = &balance
+
+			return in, out, true
+		}
+	}
+
+	return 0, 0, false
 }
